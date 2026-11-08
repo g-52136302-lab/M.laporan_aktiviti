@@ -1720,6 +1720,28 @@
     }
   }
 
+  // 监听窗口尺寸变化，自动适配桌面端与手机端布局
+  window.addEventListener('resize', () => {
+    const sidebar = document.getElementById('sidebarArea');
+    const preview = document.getElementById('previewArea');
+    
+    if (window.innerWidth > 900) {
+      // 桌面端宽屏：清除行内样式，依靠 CSS 恢复双栏左右并排布局
+      sidebar.style.display = '';
+      preview.style.display = '';
+    } else {
+      // 手机端窄屏：根据当前激活的底部/顶部标签，重新强制显示单栏
+      const isPreviewActive = document.getElementById('tabPreview').classList.contains('active');
+      if (isPreviewActive) {
+        sidebar.style.display = 'none';
+        preview.style.display = 'flex';
+      } else {
+        sidebar.style.display = 'flex';
+        preview.style.display = 'none';
+      }
+    }
+  });
+
   window.addEventListener('DOMContentLoaded', () => {
     initFontDropdown();
     initPresetDropdown();
