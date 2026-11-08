@@ -450,6 +450,10 @@
     ::selection { background: #bfdbfe; color: #1e3a8a; }
     * { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
 
+    @media screen and (min-width: 901px) and (max-width: 1280px) {
+      .sidebar { width: 340px; }
+    }
+
     @media screen and (max-width: 900px) {
       .navbar {
         padding: 11px 14px;
@@ -1740,13 +1744,59 @@
         preview.style.display = 'none';
       }
     }
+    adjustA4Scale();
   });
 
   window.addEventListener('DOMContentLoaded', () => {
     initFontDropdown();
     initPresetDropdown();
     switchLanguage('zh');
+    setTimeout(adjustA4Scale, 100);
   });
+
+  // 根据当前屏幕动态缩放 A4 预览页面 (仅限桌面端，修复笔电屏幕下部被裁切的问题)
+  function adjustA4Scale() {
+    if (window.innerWidth <= 900) {
+       // 手机端尺寸依靠 CSS 自带的 scale，这里重置 JS 行内样式
+       const a4 = document.querySelector('.a4-page');
+       if(a4) {
+           a4.style.transform = '';
+           a4.style.marginBottom = '';
+       }
+       return;
+    }
+    
+    const previewArea = document.getElementById('previewArea');
+    const a4Page = document.querySelector('.a4-page');
+    
+    if (!previewArea || !a4Page) return;
+
+    const a4Width = a4Page.offsetWidth; 
+    const a4Height = a4Page.offsetHeight;
+
+    // 预留预览区四周的 Padding (60px = 上下左右各 30px)
+    const paddingX = 60;
+    const paddingY = 60;
+
+    const availableWidth = previewArea.clientWidth - paddingX;
+    const availableHeight = previewArea.clientHeight - paddingY;
+
+    // 计算横向和纵向的缩放比率
+    const scaleX = availableWidth / a4Width;
+    const scaleY = availableHeight / a4Height;
+    
+    // 取最小值以确保整个页面完整可见
+    let scale = Math.min(scaleX, scaleY);
+    
+    // 限制最大缩放倍数为 1（不要放大得比原纸张更大）
+    if (scale > 1) scale = 1;
+
+    a4Page.style.transform = `scale(${scale})`;
+    
+    // 修正因缩放而产生的底部巨大空白
+    const heightDiff = a4Height * (1 - scale);
+    a4Page.style.marginBottom = `-${heightDiff}px`;
+  }
 
   function initFontDropdown() {
     const fontSelect = document.getElementById('fontSelect');
